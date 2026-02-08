@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign In - Squash AI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Welcome Back</h1>
+    <p style="text-align: center; color: #666;">Sign in to your Squash AI account</p>
+
+    <div class="oauth-buttons">
+      <button class="oauth-btn" onclick="loginWith('google')">
+        🔷 Sign in with Google
+      </button>
+      <button class="oauth-btn" onclick="loginWith('apple')">
+        🍎 Sign in with Apple
+      </button>
+    </div>
+
+    <div class="divider">or</div>
+
+    <form class="auth-form" id="login-form">
+      <input type="email" placeholder="Email" id="email" required />
+      <input type="password" placeholder="Password" id="password" required />
+      <button class="btn primary" type="submit">Sign In</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 16px;">
+      Don't have an account? <a href="signup.html" style="color: var(--primary);">Sign up for free</a>
+    </p>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Simple demo login - in production, validate against backend
+      const user = {
+        email: document.getElementById('email').value,
+        name: 'Test User',
+        level: 'beginner',
+        provider: 'email'
+      };
+      localStorage.setItem('squash_user', JSON.stringify(user));
+      window.location.href = 'dashboard.html';
+    });
+
+    function loginWith(provider) {
+      // Simulate OAuth login
+      const user = {
+        name: provider === 'google' ? 'Test User' : 'Apple User',
+        email: `user+${provider}@example.com`,
+        level: 'intermediate',
+        provider: provider
+      };
+      localStorage.setItem('squash_user', JSON.stringify(user));
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

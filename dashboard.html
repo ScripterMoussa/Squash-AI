@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard - Squash AI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="navbar">
+    <div class="container">
+      <div class="brand">🎾 Squash AI</div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="shot-analysis.html">Shot Analysis</a>
+        <a href="progress.html">Progress</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="container">
+      <div class="dashboard-header">
+        <div>
+          <h1>Welcome, <span id="user-name">Player</span>!</h1>
+        </div>
+        <div class="user-info">
+          <div id="level-info" style="font-weight: 600; margin-bottom: 4px;"></div>
+          <div id="goal-info" style="font-size: 0.9rem;"></div>
+        </div>
+      </div>
+
+      <div class="welcome-section">
+        <h2>Your Personal AI Coach</h2>
+        <p id="welcome-message"></p>
+        <div class="level-badge" id="level-badge"></div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="stat-sessions">0</div>
+          <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-streak">0</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-drills">0</div>
+          <div class="stat-label">Drills Logged</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-week">0</div>
+          <div class="stat-label">This Week (min)</div>
+        </div>
+      </div>
+
+      <h2 style="margin-top: 32px; margin-bottom: 24px;">Today's Recommendations</h2>
+
+      <div class="recommendations">
+        <!-- Drills Card with Log Button -->
+        <div class="card">
+          <h3>📋 Recommended Drills</h3>
+          <p class="card-subtitle">Practice these to improve specific skills</p>
+          <ul class="drill-list" id="drills-list"></ul>
+          <div style="margin-top: 12px; display: flex; gap: 8px;">
+            <button class="btn secondary" onclick="openSessionLogger()" style="flex: 1; padding: 10px;">
+              Log Session
+            </button>
+            <button class="btn" onclick="viewProgressHistory()" style="flex: 1; padding: 10px;">
+              History
+            </button>
+          </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card">
+          <h3>💡 Coaching Tips</h3>
+          <p class="card-subtitle">Key focus areas for your level</p>
+          <div id="tips-list"></div>
+        </div>
+
+        <!-- Progress Card with Real Data -->
+        <div class="card">
+          <h3>📈 Your Progress</h3>
+          <p class="card-subtitle">Track your improvement</p>
+          <div style="margin-top: 16px;">
+            <div>
+              <div style="font-weight: 600; margin-bottom: 4px;">Consistency <span id="consistency-pct" style="color: #0066cc; font-weight: 700;">0%</span></div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="consistency-bar" style="width: 0%;"></div>
+              </div>
+              <div style="font-size: 0.85rem; color: #666; margin-top: 4px;"><span id="consistency-text">0 day streak</span></div>
+            </div>
+            <div style="margin-top: 16px;">
+              <div style="font-weight: 600; margin-bottom: 4px;">Skill Improvement <span id="skill-pct" style="color: #0066cc; font-weight: 700;">0%</span></div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="skill-bar" style="width: 0%;"></div>
+              </div>
+              <div style="font-size: 0.85rem; color: #666; margin-top: 4px;"><span id="skill-text">Rating: 5.0/10</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Sessions -->
+      <h2 style="margin-top: 40px; margin-bottom: 24px;">Recent Sessions</h2>
+      <div id="recent-sessions" style="display: grid; gap: 16px;"></div>
+      <!-- Recent Sessions -->
+      <h2 style="margin-top: 40px; margin-bottom: 24px;">Recent Sessions</h2>
+      <div id="recent-sessions" style="display: grid; gap: 16px;"></div>
+
+      <h2 style="margin-top: 40px; margin-bottom: 24px;">All Drills by Category</h2>
+      <div class="recommendations" id="all-drills"></div>
+    </div>
+  </div>
+
+  <!-- Session Logger Modal -->
+  <div id="logger-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 32px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+      <h2>Log Your Session</h2>
+      <form id="session-form">
+        <div class="form-group">
+          <label for="session-duration">Duration (minutes)</label>
+          <input type="number" id="session-duration" min="5" max="180" value="30" required />
+        </div>
+        <div class="form-group">
+          <label for="session-intensity">Intensity</label>
+          <select id="session-intensity" required>
+            <option value="light">Light</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="intense">Intense</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="session-rating">How did you feel today? (1-10)</label>
+          <input type="range" id="session-rating" min="1" max="10" value="5" style="width: 100%; cursor: pointer;" />
+          <div style="text-align: center; margin-top: 8px; font-weight: 600; color: #0066cc;"><span id="rating-display">5</span>/10</div>
+        </div>
+        <div class="form-group">
+          <label>Drills you completed</label>
+          <div id="drills-checkboxes"></div>
+        </div>
+        <div class="form-group">
+          <label for="session-notes">Notes</label>
+          <textarea id="session-notes" placeholder="How did it feel? What can you improve?" style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 6px; font-family: inherit; font-size: 0.95rem;"></textarea>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button class="btn primary" style="flex: 1; padding: 12px;" type="submit">Save Session</button>
+          <button class="btn" style="flex: 1; padding: 12px;" type="button" onclick="closeSessionLogger()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem('squash_user')) || {};
+
+    if (!user.name) {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('user-name').textContent = user.name.split(' ')[0];
+    document.getElementById('level-info').textContent =
+      user.level.charAt(0).toUpperCase() + user.level.slice(1) + ' Player';
+    document.getElementById('goal-info').textContent = `Goal: ${user.goal}`;
+    document.getElementById('level-badge').textContent =
+      `Age: ${user.age} | Level: ${user.level}`;
+
+    // Initialize progress tracking
+    initProgressData();
+    updateProgressDisplay();
+
+    // Generate AI recommendations based on level
+    const recommendations = generateRecommendations(user.level, user.age);
+    document.getElementById('welcome-message').textContent = recommendations.welcomeMessage;
+
+    // Populate drills
+    const drillsList = document.getElementById('drills-list');
+    recommendations.todaysDrills.forEach(drill => {
+      const li = document.createElement('li');
+      li.className = 'drill-item';
+      li.innerHTML = `<strong>${drill.name}</strong><br><span style="color: #666; font-size: 0.85rem;">${drill.description}</span>`;
+      drillsList.appendChild(li);
+    });
+
+    // Populate drills checkboxes in logger
+    const drillsCheckboxes = document.getElementById('drills-checkboxes');
+    recommendations.todaysDrills.forEach(drill => {
+      const label = document.createElement('label');
+      label.style.display = 'flex';
+      label.style.alignItems = 'center';
+      label.style.marginBottom = '8px';
+      label.style.cursor = 'pointer';
+      label.innerHTML = `<input type="checkbox" value="${drill.name}" style="margin-right: 8px; cursor: pointer;" /> ${drill.name}`;
+      drillsCheckboxes.appendChild(label);
+    });
+
+    // Rating slider
+    document.getElementById('session-rating').addEventListener('input', (e) => {
+      document.getElementById('rating-display').textContent = e.target.value;
+    });
+
+    // Populate tips
+    const tipsList = document.getElementById('tips-list');
+    recommendations.tips.forEach(tip => {
+      const div = document.createElement('div');
+      div.style.marginBottom = '12px';
+      div.innerHTML = `
+        <div class="tip-badge">💡 ${tip.category}</div>
+        <p style="margin: 8px 0 0; font-size: 0.95rem;">${tip.message}</p>
+      `;
+      tipsList.appendChild(div);
+    });
+
+    // Populate all drills by category
+    const allDrillsDiv = document.getElementById('all-drills');
+    Object.entries(recommendations.allDrillsByCategory).forEach(([category, drills]) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h3>${category}</h3>
+        <ul class="drill-list">
+          ${drills.map(d => `<li class="drill-item"><strong>${d.name}</strong><br><span style="color: #666;">${d.description}</span></li>`).join('')}
+        </ul>
+      `;
+      allDrillsDiv.appendChild(card);
+    });
+
+    // Session logger functions
+    function openSessionLogger() {
+      document.getElementById('logger-modal').style.display = 'flex';
+      // Uncheck all drills
+      document.querySelectorAll('#drills-checkboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.getElementById('session-duration').value = 30;
+      document.getElementById('session-intensity').value = 'moderate';
+      document.getElementById('session-rating').value = 5;
+      document.getElementById('rating-display').textContent = 5;
+      document.getElementById('session-notes').value = '';
+    }
+
+    function closeSessionLogger() {
+      document.getElementById('logger-modal').style.display = 'none';
+    }
+
+    document.getElementById('session-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const drillsCompleted = Array.from(document.querySelectorAll('#drills-checkboxes input[type="checkbox"]:checked')).map(cb => cb.value);
+      const sessionData = {
+        drillsCompleted,
+        duration: parseInt(document.getElementById('session-duration').value),
+        intensity: document.getElementById('session-intensity').value,
+        skillRating: parseInt(document.getElementById('session-rating').value),
+        notes: document.getElementById('session-notes').value
+      };
+      logSession(sessionData);
+      closeSessionLogger();
+      updateProgressDisplay();
+      alert('Session logged! Great work! 💪');
+    });
+
+    function updateProgressDisplay() {
+      const stats = getProgressStats();
+      document.getElementById('stat-sessions').textContent = stats.totalSessions;
+      document.getElementById('stat-streak').textContent = stats.consistencyStreak;
+      document.getElementById('stat-drills').textContent = stats.drillsLogged;
+      document.getElementById('stat-week').textContent = stats.totalMinutesThisWeek;
+
+      const consistencyPct = getConsistencyPercentage();
+      const skillPct = getSkillImprovementPercentage();
+      
+      document.getElementById('consistency-pct').textContent = Math.round(consistencyPct) + '%';
+      document.getElementById('consistency-bar').style.width = consistencyPct + '%';
+      document.getElementById('consistency-text').textContent = stats.consistencyStreak + ' day streak - Keep it up!';
+
+      document.getElementById('skill-pct').textContent = Math.round(skillPct) + '%';
+      document.getElementById('skill-bar').style.width = skillPct + '%';
+      document.getElementById('skill-text').textContent = 'Rating: ' + stats.averageSkillRating + '/10';
+
+      // Recent sessions
+      const recentDiv = document.getElementById('recent-sessions');
+      recentDiv.innerHTML = '';
+      stats.recentSessions.forEach(session => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const date = new Date(session.date).toLocaleDateString();
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <div style="font-weight: 600;">${date}</div>
+              <div class="card-subtitle">${session.duration} min • Intensity: ${session.intensity}</div>
+              <div style="margin-top: 8px; color: #666; font-size: 0.9rem;">Drills: ${session.drillsCompleted.length > 0 ? session.drillsCompleted.join(', ') : 'None logged'}</div>
+              ${session.notes ? `<div style="margin-top: 8px; font-style: italic; color: #666;">Note: ${session.notes}</div>` : ''}
+            </div>
+            <div style="text-align: right; font-weight: 700; color: #0066cc; font-size: 1.25rem;">${session.skillRating}/10</div>
+          </div>
+        `;
+        recentDiv.appendChild(card);
+      });
+    }
+
+    function viewProgressHistory() {
+      window.location.href = 'progress.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('squash_user');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

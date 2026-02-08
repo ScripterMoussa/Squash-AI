@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign Up - Squash AI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Join Squash AI</h1>
+    <p style="text-align: center; color: #666;">Free AI coaching for every squash player</p>
+
+    <div class="oauth-buttons">
+      <button class="oauth-btn" onclick="signupWith('google')">
+        🔷 Sign up with Google
+      </button>
+      <button class="oauth-btn" onclick="signupWith('apple')">
+        🍎 Sign up with Apple
+      </button>
+      <button class="oauth-btn" onclick="signupWith('email')">
+        ✉️ Sign up with Email
+      </button>
+    </div>
+
+    <div class="divider">or</div>
+
+    <form class="auth-form" id="signup-form">
+      <input type="text" placeholder="Full Name" id="name" required />
+      <input type="email" placeholder="Email" id="email" required />
+      <input type="password" placeholder="Password" id="password" required />
+      <button class="btn primary" type="submit">Create Account</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 16px;">
+      Already have an account? <a href="login.html" style="color: var(--primary);">Sign in</a>
+    </p>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        provider: 'email'
+      };
+      localStorage.setItem('squash_user', JSON.stringify(user));
+      window.location.href = 'profile-setup.html';
+    });
+
+    function signupWith(provider) {
+      // Simulate OAuth signup
+      const user = {
+        name: provider === 'google' ? 'Test User' : 'Apple User',
+        email: `user+${provider}@example.com`,
+        provider: provider
+      };
+      localStorage.setItem('squash_user', JSON.stringify(user));
+      window.location.href = 'profile-setup.html';
+    }
+  </script>
+</body>
+</html>

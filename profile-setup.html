@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Set Up Your Profile - Squash AI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="profile-setup">
+    <h1>Let's Get to Know You</h1>
+    <p style="text-align: center; color: #666; margin-bottom: 32px;">
+      This helps us personalize your AI coaching
+    </p>
+
+    <form id="profile-form">
+      <div class="form-group">
+        <label for="age">What's your age?</label>
+        <select id="age" required>
+          <option value="">Select age range</option>
+          <option value="5-10">5-10 years</option>
+          <option value="11-15">11-15 years</option>
+          <option value="16-20">16-20 years</option>
+          <option value="21-30">21-30 years</option>
+          <option value="31-40">31-40 years</option>
+          <option value="40+">40+ years</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>What's your play level?</label>
+        <div class="radio-group" id="level-group">
+          <label class="radio-item">
+            <input type="radio" name="level" value="beginner" required />
+            <div>
+              <div style="font-weight: 600;">Beginner</div>
+              <div style="color: #666; font-size: 0.85rem;">Just starting out, learning basics</div>
+            </div>
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="level" value="intermediate" />
+            <div>
+              <div style="font-weight: 600;">Intermediate</div>
+              <div style="color: #666; font-size: 0.85rem;">Can rally consistently, improving</div>
+            </div>
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="level" value="advanced" />
+            <div>
+              <div style="font-weight: 600;">Advanced</div>
+              <div style="color: #666; font-size: 0.85rem;">Strong fundamentals, competitive</div>
+            </div>
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="level" value="professional" />
+            <div>
+              <div style="font-weight: 600;">Professional</div>
+              <div style="color: #666; font-size: 0.85rem;">High-level training, tournament play</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="goal">What's your main goal?</label>
+        <select id="goal" required>
+          <option value="">Select a goal</option>
+          <option value="fitness">Get fit and active</option>
+          <option value="improve">Improve my game</option>
+          <option value="compete">Compete seriously</option>
+          <option value="fun">Have fun</option>
+        </select>
+      </div>
+
+      <button class="btn primary" style="width: 100%; padding: 14px; margin-top: 24px;" type="submit">
+        Start Your AI Training
+      </button>
+    </form>
+  </div>
+
+  <script>
+    // Add visual selection feedback
+    document.querySelectorAll('.radio-item').forEach(item => {
+      item.addEventListener('click', function () {
+        document.querySelectorAll('.radio-item').forEach(i => i.classList.remove('selected'));
+        this.classList.add('selected');
+        this.querySelector('input[type="radio"]').checked = true;
+      });
+    });
+
+    document.getElementById('profile-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = JSON.parse(localStorage.getItem('squash_user'));
+      user.age = document.getElementById('age').value;
+      user.level = document.querySelector('input[name="level"]:checked').value;
+      user.goal = document.getElementById('goal').value;
+      user.createdAt = new Date().toISOString();
+      localStorage.setItem('squash_user', JSON.stringify(user));
+      window.location.href = 'dashboard.html';
+    });
+  </script>
+</body>
+</html>

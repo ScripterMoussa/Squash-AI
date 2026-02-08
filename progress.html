@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Progress History - Squash AI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="navbar">
+    <div class="container">
+      <div class="brand">🎾 Squash AI</div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="progress.html">Progress</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="container">
+      <h1>Your Progress</h1>
+
+      <div class="stats-grid" style="margin-bottom: 32px;">
+        <div class="stat-card">
+          <div class="stat-number" id="total-sessions">0</div>
+          <div class="stat-label">Total Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="total-minutes">0</div>
+          <div class="stat-label">Minutes Practiced</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="total-drills">0</div>
+          <div class="stat-label">Drills Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="avg-rating">0</div>
+          <div class="stat-label">Avg Rating</div>
+        </div>
+      </div>
+
+      <h2 style="margin-top: 40px; margin-bottom: 24px;">Weekly Overview</h2>
+      <div class="card" style="margin-bottom: 32px;">
+        <canvas id="progress-chart" style="max-height: 300px;"></canvas>
+        <p id="weekly-summary" style="margin-top: 16px; color: #666;"></p>
+      </div>
+
+      <h2 style="margin-top: 40px; margin-bottom: 24px;">All Sessions</h2>
+      <div class="card">
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <input type="text" id="filter-search" placeholder="Search sessions..." style="flex: 1; padding: 8px; border: 1px solid #e0e0e0; border-radius: 6px;" />
+          <select id="filter-intensity" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 6px;">
+            <option value="">All Intensities</option>
+            <option value="light">Light</option>
+            <option value="moderate">Moderate</option>
+            <option value="intense">Intense</option>
+          </select>
+        </div>
+        <div id="sessions-list" style="display: grid; gap: 12px;"></div>
+      </div>
+
+      <h2 style="margin-top: 40px; margin-bottom: 24px;">Your Top Drills</h2>
+      <div id="top-drills" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;"></div>
+
+      <div style="text-align: center; margin-top: 40px;">
+        <a href="dashboard.html" class="btn primary" style="padding: 12px 24px;">Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem('squash_user')) || {};
+
+    if (!user.name) {
+      window.location.href = 'index.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('squash_user');
+      window.location.href = 'index.html';
+    }
+
+    // Load data
+    const sessions = getSessions();
+    const progress = getProgress();
+
+    // Calculate totals
+    const totalMinutes = sessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const avgRating = sessions.length > 0 
+      ? (sessions.reduce((sum, s) => sum + (s.skillRating || 5), 0) / sessions.length).toFixed(1)
+      : 0;
+
+    document.getElementById('total-sessions').textContent = sessions.length;
+    document.getElementById('total-minutes').textContent = totalMinutes;
+    document.getElementById('total-drills').textContent = progress.totalDrillsLogged;
+    document.getElementById('avg-rating').textContent = avgRating;
+
+    // Weekly summary
+    const lastWeek = sessions.filter(s => {
+      const sessionDate = new Date(s.date);
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      return sessionDate >= weekAgo;
+    });
+
+    const weeklyMinutes = lastWeek.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const weeklySummary = `You've had <strong>${lastWeek.length} sessions</strong> this week, logging <strong>${weeklyMinutes} minutes</strong> of practice.${lastWeek.length >= 5 ? ' Excellent consistency! 🔥' : lastWeek.length >= 3 ? ' Great job staying consistent! 💪' : ' Keep building the habit! 🎯'}`;
+    document.getElementById('weekly-summary').innerHTML = weeklySummary;
+
+    // Sessions list
+    const sessionsList = document.getElementById('sessions-list');
+    const filteredSessions = sessions
+      .filter(s => {
+        const intensity = document.getElementById('filter-intensity').value;
+        return !intensity || s.intensity === intensity;
+      })
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    function renderSessions() {
+      const filtered = sessions
+        .filter(s => {
+          const intensity = document.getElementById('filter-intensity').value;
+          return !intensity || s.intensity === intensity;
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sessionsList.innerHTML = '';
+      if (filtered.length === 0) {
+        sessionsList.innerHTML = '<p style="color: #999;">No sessions found.</p>';
+        return;
+      }
+
+      filtered.forEach(session => {
+        const date = new Date(session.date);
+        const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        
+        const div = document.createElement('div');
+        div.style.padding = '16px';
+        div.style.border = '1px solid #e0e0e0';
+        div.style.borderRadius = '8px';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'start';
+
+        const intensityColor = {
+          light: '#ffc107',
+          moderate: '#0066cc',
+          intense: '#d32f2f'
+        }[session.intensity] || '#0066cc';
+
+        div.innerHTML = `
+          <div>
+            <div style="font-weight: 600;">${dateStr} at ${timeStr}</div>
+            <div style="color: #666; font-size: 0.9rem; margin-top: 4px;">
+              ${session.duration} min • <span style="color: ${intensityColor}; font-weight: 600;">${session.intensity.charAt(0).toUpperCase() + session.intensity.slice(1)}</span>
+            </div>
+            ${session.drillsCompleted && session.drillsCompleted.length > 0 ? `
+              <div style="margin-top: 8px; font-size: 0.85rem; color: #666;">
+                Drills: ${session.drillsCompleted.join(', ')}
+              </div>
+            ` : ''}
+            ${session.notes ? `<div style="margin-top: 8px; font-style: italic; color: #666; font-size: 0.9rem;">Note: ${session.notes}</div>` : ''}
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; color: ${intensityColor}; font-size: 1.25rem;">${session.skillRating}/10</div>
+          </div>
+        `;
+        sessionsList.appendChild(div);
+      });
+    }
+
+    renderSessions();
+
+    // Filter listeners
+    document.getElementById('filter-intensity').addEventListener('change', renderSessions);
+    document.getElementById('filter-search').addEventListener('input', (e) => {
+      const search = e.target.value.toLowerCase();
+      // Could filter by drill name or notes here
+      renderSessions();
+    });
+
+    // Top drills
+    const topDrillsDiv = document.getElementById('top-drills');
+    const drillCounts = {};
+    sessions.forEach(s => {
+      if (s.drillsCompleted) {
+        s.drillsCompleted.forEach(d => {
+          drillCounts[d] = (drillCounts[d] || 0) + 1;
+        });
+      }
+    });
+
+    const sortedDrills = Object.entries(drillCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6);
+
+    if (sortedDrills.length === 0) {
+      topDrillsDiv.innerHTML = '<p style="color: #999;">Log some sessions to see your top drills!</p>';
+    } else {
+      sortedDrills.forEach(([drill, count]) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3 style="margin-top: 0;">${drill}</h3>
+          <div style="font-weight: 700; color: #0066cc; font-size: 1.5rem;">${count}</div>
+          <div style="color: #666; font-size: 0.9rem;">times completed</div>
+        `;
+        topDrillsDiv.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

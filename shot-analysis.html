@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shot Analysis - Squash AI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="navbar">
+    <div class="container">
+      <div class="brand">🎾 Squash AI</div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="shot-analysis.html">Shot Analysis</a>
+        <a href="progress.html">Progress</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="container">
+      <h1>Shot & Movement Analysis</h1>
+      <p style="color: #666; margin-bottom: 32px;">Track your shots and get real-time recommendations</p>
+
+      <!-- Log Shot/Movement Section -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 32px;">
+        <div class="card">
+          <h3>Log a Shot</h3>
+          <form id="shot-form">
+            <div class="form-group">
+              <label for="shot-type">Shot Type</label>
+              <select id="shot-type" required>
+                <option value="">Select shot</option>
+                <option value="straight">Straight (down wall)</option>
+                <option value="cross_court">Cross Court (diagonal)</option>
+                <option value="boast">Boast (wall behind)</option>
+                <option value="drop">Drop (soft short)</option>
+                <option value="volley">Volley</option>
+                <option value="lob">Lob (high)</option>
+                <option value="serve">Serve</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="shot-zone">Your Position</label>
+              <select id="shot-zone" required>
+                <option value="back_left">Back Left</option>
+                <option value="back_center" selected>Back Center</option>
+                <option value="back_right">Back Right</option>
+                <option value="mid_left">Mid Left</option>
+                <option value="mid_center">Mid Center</option>
+                <option value="mid_right">Mid Right</option>
+                <option value="front_left">Front Left</option>
+                <option value="front_center">Front Center</option>
+                <option value="front_right">Front Right</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="shot-intensity">Intensity</label>
+              <select id="shot-intensity" required>
+                <option value="soft">Soft</option>
+                <option value="medium" selected>Medium</option>
+                <option value="aggressive">Aggressive</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="shot-success" checked /> Ball In Court
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="shot-winner" /> Opponent Missed (Winner)
+              </label>
+            </div>
+
+            <button class="btn primary" style="width: 100%; padding: 10px;" type="submit">Log Shot</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Log Movement</h3>
+          <form id="movement-form">
+            <div class="form-group">
+              <label for="move-from">Moved From</label>
+              <select id="move-from" required>
+                <option value="mid_center" selected>Mid Center (T)</option>
+                <option value="back_left">Back Left</option>
+                <option value="back_center">Back Center</option>
+                <option value="back_right">Back Right</option>
+                <option value="mid_left">Mid Left</option>
+                <option value="mid_right">Mid Right</option>
+                <option value="front_left">Front Left</option>
+                <option value="front_center">Front Center</option>
+                <option value="front_right">Front Right</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="move-to">Moved To</label>
+              <select id="move-to" required>
+                <option value="back_left">Back Left</option>
+                <option value="back_center">Back Center</option>
+                <option value="back_right">Back Right</option>
+                <option value="mid_left">Mid Left</option>
+                <option value="mid_center" selected>Mid Center (T)</option>
+                <option value="mid_right">Mid Right</option>
+                <option value="front_left">Front Left</option>
+                <option value="front_center">Front Center</option>
+                <option value="front_right">Front Right</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="move-speed">Speed</label>
+              <select id="move-speed" required>
+                <option value="slow">Slow</option>
+                <option value="medium" selected>Medium</option>
+                <option value="fast">Fast</option>
+                <option value="explosive">Explosive</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="move-reaction">Reaction Time (sec)</label>
+              <input type="number" id="move-reaction" min="0.1" max="2" step="0.1" value="0.3" required />
+            </div>
+
+            <button class="btn primary" style="width: 100%; padding: 10px;" type="submit">Log Movement</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Get Recommendation Section -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 32px;">
+        <div class="card">
+          <h3>Next Shot Recommendation</h3>
+          <p class="card-subtitle">Get AI recommendation for current situation</p>
+          <div class="form-group">
+            <label for="rec-current-zone">Your Current Position</label>
+            <select id="rec-current-zone">
+              <option value="back_center" selected>Back Center</option>
+              <option value="mid_center">Mid Center</option>
+              <option value="front_center">Front Center</option>
+              <option value="mid_left">Mid Left</option>
+              <option value="mid_right">Mid Right</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="rec-opp-zone">Opponent Position</label>
+            <select id="rec-opp-zone">
+              <option value="back_center">Back Center</option>
+              <option value="mid_center" selected>Mid Center</option>
+              <option value="front_center">Front Center</option>
+            </select>
+          </div>
+          <button class="btn secondary" style="width: 100%; padding: 10px;" onclick="getRecommendation()">Get Recommendation</button>
+          <div id="rec-result" style="margin-top: 16px; display: none;"></div>
+        </div>
+
+        <div class="card">
+          <h3>Movement Recommendation</h3>
+          <p class="card-subtitle">Get movement tips after your shot</p>
+          <div class="form-group">
+            <label for="move-rec-zone">Your Position</label>
+            <select id="move-rec-zone">
+              <option value="back_center" selected>Back Center</option>
+              <option value="mid_center">Mid Center</option>
+              <option value="front_center">Front Center</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="move-rec-shot">Shot Played</label>
+            <select id="move-rec-shot">
+              <option value="straight" selected>Straight</option>
+              <option value="cross_court">Cross Court</option>
+              <option value="boast">Boast</option>
+              <option value="drop">Drop</option>
+            </select>
+          </div>
+          <button class="btn secondary" style="width: 100%; padding: 10px;" onclick="getMovementRec()">Get Movement Tips</button>
+          <div id="move-rec-result" style="margin-top: 16px; display: none;"></div>
+        </div>
+      </div>
+
+      <!-- Analysis Results Section -->
+      <h2 style="margin-top: 40px; margin-bottom: 24px;">Your Shot Analysis</h2>
+      <div id="shot-analysis" style="display: grid; gap: 16px;"></div>
+
+      <h2 style="margin-top: 40px; margin-bottom: 24px;">Your Movement Analysis</h2>
+      <div id="movement-analysis" style="display: grid; gap: 16px;"></div>
+
+      <div style="text-align: center; margin-top: 40px;">
+        <a href="dashboard.html" class="btn primary" style="padding: 12px 24px;">Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const user = JSON.parse(localStorage.getItem('squash_user')) || {};
+    const API_URL = 'http://localhost:5000/api';
+
+    if (!user.name) {
+      window.location.href = 'index.html';
+    }
+
+    // Log Shot
+    document.getElementById('shot-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const shotData = {
+        shot_type: document.getElementById('shot-type').value,
+        court_zone: document.getElementById('shot-zone').value,
+        target_zone: 'back_left', // Could enhance this
+        intensity: document.getElementById('shot-intensity').value,
+        success: document.getElementById('shot-success').checked,
+        winner: document.getElementById('shot-winner').checked,
+        rating: 7
+      };
+
+      try {
+        // Try API first
+        const response = await fetch(`${API_URL}/users/${user.id}/shots`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(shotData)
+        });
+
+        if (response.ok) {
+          alert('Shot logged!');
+          document.getElementById('shot-form').reset();
+          loadAnalysis();
+        }
+      } catch (e) {
+        // Fallback to localStorage
+        alert('Shot logged locally! (API not available)');
+        document.getElementById('shot-form').reset();
+      }
+    });
+
+    // Log Movement
+    document.getElementById('movement-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const moveData = {
+        from_zone: document.getElementById('move-from').value,
+        to_zone: document.getElementById('move-to').value,
+        speed: document.getElementById('move-speed').value,
+        reaction_time: parseFloat(document.getElementById('move-reaction').value),
+        efficiency: 0.75
+      };
+
+      try {
+        const response = await fetch(`${API_URL}/users/${user.id}/movements`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(moveData)
+        });
+
+        if (response.ok) {
+          alert('Movement logged!');
+          document.getElementById('movement-form').reset();
+          loadAnalysis();
+        }
+      } catch (e) {
+        alert('Movement logged locally! (API not available)');
+        document.getElementById('movement-form').reset();
+      }
+    });
+
+    // Get Shot Recommendation
+    async function getRecommendation() {
+      const recData = {
+        current_zone: document.getElementById('rec-current-zone').value,
+        opponent_zone: document.getElementById('rec-opp-zone').value
+      };
+
+      try {
+        const response = await fetch(`${API_URL}/users/${user.id}/shot-recommendation`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(recData)
+        });
+
+        if (response.ok) {
+          const rec = await response.json();
+          displayShotRecommendation(rec);
+        }
+      } catch (e) {
+        alert('API not available. Make sure Python server is running on localhost:5000');
+      }
+    }
+
+    // Get Movement Recommendation
+    async function getMovementRec() {
+      const moveData = {
+        current_zone: document.getElementById('move-rec-zone').value,
+        shot_played: document.getElementById('move-rec-shot').value
+      };
+
+      try {
+        const response = await fetch(`${API_URL}/users/${user.id}/movement-recommendation`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(moveData)
+        });
+
+        if (response.ok) {
+          const rec = await response.json();
+          displayMovementRecommendation(rec);
+        }
+      } catch (e) {
+        alert('API not available. Make sure Python server is running on localhost:5000');
+      }
+    }
+
+    function displayShotRecommendation(rec) {
+      const div = document.getElementById('rec-result');
+      let html = `
+        <div style="background: #e6f2ff; padding: 12px; border-radius: 6px; border-left: 4px solid #0066cc;">
+          <div style="font-weight: 600; margin-bottom: 8px;">💡 ${rec.reasoning}</div>
+      `;
+
+      if (rec.recommended_shots && rec.recommended_shots.length > 0) {
+        html += '<div style="margin-top: 12px;"><strong>Top Options:</strong><ul style="margin: 8px 0; padding-left: 20px;">';
+        rec.recommended_shots.forEach(shot => {
+          const conf = Math.round((shot.confidence || 0) * 100);
+          html += `<li>${shot.shot} - ${shot.desc}<br><span style="color: #666; font-size: 0.85rem;">Success rate: ${conf}%</span></li>`;
+        });
+        html += '</ul></div>';
+      }
+
+      html += '</div>';
+      div.innerHTML = html;
+      div.style.display = 'block';
+    }
+
+    function displayMovementRecommendation(rec) {
+      const div = document.getElementById('move-rec-result');
+      let html = `
+        <div style="background: #e6f7e6; padding: 12px; border-radius: 6px; border-left: 4px solid #00a651;">
+          <div style="font-weight: 600; margin-bottom: 8px;">🏃 Movement Tips</div>
+      `;
+
+      if (rec.movements && rec.movements.length > 0) {
+        html += '<ul style="margin: 8px 0; padding-left: 20px;">';
+        rec.movements.forEach(move => {
+          html += `<li><strong>${move.move_to}:</strong> ${move.reason}</li>`;
+        });
+        html += '</ul>';
+      }
+
+      if (rec.efficiency_tips && rec.efficiency_tips.length > 0) {
+        html += '<div style="margin-top: 12px;"><strong>Efficiency Tips:</strong><ul style="margin: 8px 0; padding-left: 20px;">';
+        rec.efficiency_tips.forEach(tip => {
+          html += `<li>${tip}</li>`;
+        });
+        html += '</ul></div>';
+      }
+
+      html += '</div>';
+      div.innerHTML = html;
+      div.style.display = 'block';
+    }
+
+    async function loadAnalysis() {
+      // Load shot analysis
+      try {
+        const shotRes = await fetch(`${API_URL}/users/${user.id}/shot-analysis`);
+        if (shotRes.ok) {
+          const shotAnalysis = await shotRes.json();
+          displayShotAnalysis(shotAnalysis);
+        }
+      } catch (e) {}
+
+      // Load movement analysis
+      try {
+        const moveRes = await fetch(`${API_URL}/users/${user.id}/movement-analysis`);
+        if (moveRes.ok) {
+          const moveAnalysis = await moveRes.json();
+          displayMovementAnalysis(moveAnalysis);
+        }
+      } catch (e) {}
+    }
+
+    function displayShotAnalysis(analysis) {
+      const div = document.getElementById('shot-analysis');
+      let html = '';
+
+      // Shot Distribution
+      if (Object.keys(analysis.shot_distribution || {}).length > 0) {
+        html += '<div class="card"><h3>Shot Distribution</h3>';
+        for (const [shot, pct] of Object.entries(analysis.shot_distribution)) {
+          html += `<div style="margin-bottom: 12px;"><strong>${shot}</strong><br><div class="progress-bar"><div class="progress-fill" style="width: ${pct}%;"></div></div><div style="font-size: 0.85rem; color: #666;">${Math.round(pct)}%</div></div>`;
+        }
+        html += '</div>';
+      }
+
+      // Success Rates
+      if (Object.keys(analysis.success_rates || {}).length > 0) {
+        html += '<div class="card"><h3>Success Rates</h3>';
+        for (const [shot, rate] of Object.entries(analysis.success_rates)) {
+          const pct = Math.round(rate * 100);
+          html += `<div style="margin-bottom: 8px;"><strong>${shot}</strong>: <span style="color: ${pct >= 70 ? '#00a651' : pct >= 50 ? '#0066cc' : '#d32f2f'}; font-weight: 700;">${pct}%</span></div>`;
+        }
+        html += '</div>';
+      }
+
+      // Recommendations
+      if (analysis.recommendations && analysis.recommendations.length > 0) {
+        html += '<div class="card"><h3>Recommendations</h3><ul>';
+        analysis.recommendations.forEach(rec => {
+          html += `<li>${rec}</li>`;
+        });
+        html += '</ul></div>';
+      }
+
+      // Patterns
+      if (analysis.patterns && analysis.patterns.length > 0) {
+        html += '<div class="card"><h3>Patterns Found</h3>';
+        analysis.patterns.forEach(pattern => {
+          html += `<div style="margin-bottom: 12px; padding: 12px; background: #fff3cd; border-radius: 6px;"><strong>${pattern.pattern}</strong><br><span style="color: #666;">${pattern.tip}</span></div>`;
+        });
+        html += '</div>';
+      }
+
+      div.innerHTML = html || '<p>Log some shots to see analysis</p>';
+    }
+
+    function displayMovementAnalysis(analysis) {
+      const div = document.getElementById('movement-analysis');
+      let html = '';
+
+      // Zone Coverage
+      if (Object.keys(analysis.zones_coverage || {}).length > 0) {
+        html += '<div class="card"><h3>Zone Coverage</h3>';
+        for (const [zone, pct] of Object.entries(analysis.zones_coverage)) {
+          html += `<div style="margin-bottom: 12px;"><strong>${zone}</strong><br><div class="progress-bar"><div class="progress-fill" style="width: ${pct}%;"></div></div><div style="font-size: 0.85rem; color: #666;">${Math.round(pct)}%</div></div>`;
+        }
+        html += '</div>';
+      }
+
+      // Stats
+      html += `<div class="card"><h3>Movement Stats</h3>
+        <div style="margin: 12px 0;"><strong>Avg Reaction Time:</strong> ${(analysis.avg_reaction_time || 0).toFixed(2)}s</div>
+        <div style="margin: 12px 0;"><strong>Movement Efficiency:</strong> ${Math.round((analysis.movement_efficiency || 0) * 100)}%</div>
+        ${analysis.positioning && analysis.positioning.t_position_recovery_pct ? `<div style="margin: 12px 0;"><strong>T-Position Recovery:</strong> ${Math.round(analysis.positioning.t_position_recovery_pct)}%</div>` : ''}
+      </div>`;
+
+      // Weak Areas
+      if (analysis.movement_weak_areas && analysis.movement_weak_areas.length > 0) {
+        html += '<div class="card"><h3>Areas to Improve</h3><ul>';
+        analysis.movement_weak_areas.forEach(weak => {
+          html += `<li>${weak}</li>`;
+        });
+        html += '</ul></div>';
+      }
+
+      // Recommendations
+      if (analysis.recommendations && analysis.recommendations.length > 0) {
+        html += '<div class="card"><h3>Movement Drills</h3><ul>';
+        analysis.recommendations.forEach(rec => {
+          html += `<li>${rec}</li>`;
+        });
+        html += '</ul></div>';
+      }
+
+      div.innerHTML = html || '<p>Log some movements to see analysis</p>';
+    }
+
+    function logout() {
+      localStorage.removeItem('squash_user');
+      window.location.href = 'index.html';
+    }
+
+    // Load analysis on page load
+    loadAnalysis();
+  </script>
+</body>
+</html>
